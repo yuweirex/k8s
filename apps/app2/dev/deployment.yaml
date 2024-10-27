@@ -233,8 +233,10 @@ metadata:
   namespace: penpot
 spec:
   ports:
-    - port: 80
+    - nodePort: 30083
+      port: 80
       targetPort: 80
+  type: NodePort
   selector:
     app: penpot-frontend
 

@@ -1,0 +1,295 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: penpot
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: penpot-postgres-pvc
+  namespace: penpot
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: penpot-assets-pvc
+  namespace: penpot
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: penpot-frontend
+  namespace: penpot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: penpot-frontend
+  template:
+    metadata:
+      labels:
+        app: penpot-frontend
+    spec:
+      containers:
+        - name: penpot-frontend
+          image: "penpotapp/frontend:latest"
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - mountPath: /opt/data/assets
+              name: penpot-assets
+          env:
+            - name: PENPOT_FLAGS
+              value: "enable-registration enable-login-with-password"
+      volumes:
+        - name: penpot-assets
+          persistentVolumeClaim:
+            claimName: penpot-assets-pvc
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: penpot-backend
+  namespace: penpot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: penpot-backend
+  template:
+    metadata:
+      labels:
+        app: penpot-backend
+    spec:
+      containers:
+        - name: penpot-backend
+          image: "penpotapp/backend:latest"
+          env:
+            - name: PENPOT_FLAGS
+              value: "enable-registration enable-login-with-password disable-email-verification enable-smtp enable-prepl-server"
+            - name: PENPOT_DATABASE_URI
+              value: "postgresql://penpot-postgres/penpot"
+            - name: PENPOT_DATABASE_USERNAME
+              value: "penpot"
+            - name: PENPOT_DATABASE_PASSWORD
+              value: "penpot"
+            - name: PENPOT_REDIS_URI
+              value: "redis://penpot-redis/0"
+            - name: PENPOT_ASSETS_STORAGE_BACKEND
+              value: "assets-fs"
+            - name: PENPOT_STORAGE_ASSETS_FS_DIRECTORY
+              value: "/opt/data/assets"
+            - name: PENPOT_TELEMETRY_ENABLED
+              value: "true"
+            - name: PENPOT_SMTP_DEFAULT_FROM
+              value: "no-reply@example.com"
+            - name: PENPOT_SMTP_DEFAULT_REPLY_TO
+              value: "no-reply@example.com"
+            - name: PENPOT_SMTP_HOST
+              value: "penpot-mailcatch"
+            - name: PENPOT_SMTP_PORT
+              value: "1025"
+          volumeMounts:
+            - mountPath: /opt/data/assets
+              name: penpot-assets
+      volumes:
+        - name: penpot-assets
+          persistentVolumeClaim:
+            claimName: penpot-assets-pvc
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: penpot-exporter
+  namespace: penpot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: penpot-exporter
+  template:
+    metadata:
+      labels:
+        app: penpot-exporter
+    spec:
+      containers:
+        - name: penpot-exporter
+          image: "penpotapp/exporter:latest"
+          env:
+            - name: PENPOT_PUBLIC_URI
+              value: "http://penpot-frontend"
+            - name: PENPOT_REDIS_URI
+              value: "redis://penpot-redis/0"
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: penpot-postgres
+  namespace: penpot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: penpot-postgres
+  template:
+    metadata:
+      labels:
+        app: penpot-postgres
+    spec:
+      containers:
+        - name: penpot-postgres
+          image: "postgres:15"
+          env:
+            - name: POSTGRES_INITDB_ARGS
+              value: "--data-checksums"
+            - name: POSTGRES_DB
+              value: "penpot"
+            - name: POSTGRES_USER
+              value: "penpot"
+            - name: POSTGRES_PASSWORD
+              value: "penpot"
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: penpot-postgres-storage
+      volumes:
+        - name: penpot-postgres-storage
+          persistentVolumeClaim:
+            claimName: penpot-postgres-pvc
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: penpot-redis
+  namespace: penpot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: penpot-redis
+  template:
+    metadata:
+      labels:
+        app: penpot-redis
+    spec:
+      containers:
+        - name: penpot-redis
+          image: "redis:7"
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: penpot-mailcatch
+  namespace: penpot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: penpot-mailcatch
+  template:
+    metadata:
+      labels:
+        app: penpot-mailcatch
+    spec:
+      containers:
+        - name: penpot-mailcatch
+          image: "sj26/mailcatcher:latest"
+          ports:
+            - containerPort: 1080
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: penpot-frontend
+  namespace: penpot
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: penpot-frontend
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: penpot-backend
+  namespace: penpot
+spec:
+  ports:
+    - port: 9000
+      targetPort: 9000
+  selector:
+    app: penpot-backend
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: penpot-postgres
+  namespace: penpot
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: penpot-postgres
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: penpot-redis
+  namespace: penpot
+spec:
+  ports:
+    - port: 6379
+      targetPort: 6379
+  selector:
+    app: penpot-redis
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: penpot-mailcatch
+  namespace: penpot
+spec:
+  ports:
+    - port: 1080
+      targetPort: 1080
+  selector:
+    app: penpot-mailcatch

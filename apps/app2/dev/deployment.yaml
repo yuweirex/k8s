@@ -226,3 +226,38 @@ spec:
   resources:
     requests:
       storage: 1Gi
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: penpot-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: penpot-exporter
+  template:
+    metadata:
+      labels:
+        app: penpot-exporter
+    spec:
+      containers:
+        - name: exporter
+          image: penpotapp/exporter:latest
+          env:
+            - name: PENPOT_PUBLIC_URI
+              value: "http://penpot-frontend"
+            - name: PENPOT_REDIS_URI
+              value: "redis://penpot-redis/0"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: penpot-exporter
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: penpot-exporter

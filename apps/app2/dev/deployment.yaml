@@ -42,3 +42,29 @@ spec:
       nodePort: 30083
   selector:
     app: penpot-frontend
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: penpot-assets-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /data/penpot-assets
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: penpot-assets-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

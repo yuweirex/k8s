@@ -68,3 +68,43 @@ spec:
   resources:
     requests:
       storage: 1Gi
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: penpot-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: penpot-backend
+  template:
+    metadata:
+      labels:
+        app: penpot-backend
+    spec:
+      containers:
+        - name: backend
+          image: penpotapp/backend:latest
+          env:
+            - name: PENPOT_PUBLIC_URI
+              value: "http://localhost:9001"
+            - name: PENPOT_DATABASE_URI
+              value: "postgresql://penpot-postgres/penpot"
+            - name: PENPOT_DATABASE_USERNAME
+              value: "penpot"
+            - name: PENPOT_DATABASE_PASSWORD
+              value: "penpot"
+            - name: PENPOT_REDIS_URI
+              value: "redis://penpot-redis/0"
+            - name: PENPOT_ASSETS_STORAGE_BACKEND
+              value: "assets-fs"
+          volumeMounts:
+            - name: penpot-assets
+              mountPath: /opt/data/assets
+      volumes:
+        - name: penpot-assets
+          persistentVolumeClaim:
+            claimName: penpot-assets-pvc

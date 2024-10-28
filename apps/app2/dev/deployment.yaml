@@ -268,8 +268,6 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: penpot-http-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: 100m
 spec:
   rules:
     - http:
@@ -283,37 +281,4 @@ spec:
                   number: 9001
 ---
 
-apiVersion: v1
-kind: Service
-metadata:
-  name: ingress-nginx-controller
-spec:
-  type: NodePort
-  ports:
-    - name: http
-      port: 80
-      nodePort: 30083
-  selector:
-    app.kubernetes.io/name: penpot-http-ingress
 
----
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ingress-nginx-controller
-spec:
-  selector:
-    matchLabels:
-      app: ingress-nginx-controller
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: ingress-nginx-controller
-    spec:
-      containers:
-        - name: ingress-nginx-controller
-          image: nginx/nginx-ingress:latest
-          ports:
-            - name: http

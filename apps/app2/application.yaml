@@ -1,18 +1,23 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: penpot
+  name: penpot-application
   namespace: argocd
 spec:
-  destination:
-    name: ""
-    namespace: penpot
+  project: default
+
   source:
     repoURL: https://github.com/yuweirex/k8s.git
     targetRevision: HEAD
     path: apps/app2/dev
-  project: default
+  destination: 
+    server: https://kubernetes.default.svc
+    namespace: myapp
+
   syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
+
     automated:
-      prune: true
       selfHeal: true
+      prune: true

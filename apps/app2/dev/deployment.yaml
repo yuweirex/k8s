@@ -140,3 +140,50 @@ spec:
     - port: 6379
   selector:
     app: penpot-redis
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: penpot-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: penpot-postgres
+  template:
+    metadata:
+      labels:
+        app: penpot-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: penpot-postgres-storage
+              mountPath: /var/lib/postgresql/data
+          env:
+            - name: POSTGRES_DB
+              value: "penpot"
+            - name: POSTGRES_USER
+              value: "penpot"
+            - name: POSTGRES_PASSWORD
+              value: "penpot"
+      volumes:
+        - name: penpot-postgres-storage
+          persistentVolumeClaim:
+            claimName: penpot-postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: penpot-postgres
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: penpot-postgres
+

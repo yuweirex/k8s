@@ -291,4 +291,3 @@ spec:
       nodePort: 30083
   selector:
     app.kubernetes.io/name: penpot-http-ingress
-12

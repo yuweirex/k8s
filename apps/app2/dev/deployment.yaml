@@ -268,9 +268,8 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: penpot-http-ingress
-  labels:
-    app.kubernetes.io/name: penpot-http-ingress
-    app.kubernetes.io/instance: penpot
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 100m
 spec:
   rules:
     - http:

@@ -233,10 +233,8 @@ metadata:
   namespace: penpot
 spec:
   ports:
-    - nodePort: 30083
-      port: 80
+    - port: 80
       targetPort: 80
-  type: NodePort
   selector:
     app: penpot-frontend
 
@@ -295,3 +293,17 @@ spec:
       targetPort: 1080
   selector:
     app: penpot-mailcatch
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: penpot-exporter
+  namespace: penpot
+spec:
+  ports:
+    - port: 8888
+      targetPort: 8888
+  selector:
+    app: penpot-exporter

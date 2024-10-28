@@ -111,6 +111,20 @@ spec:
 
 ---
 
+apiVersion: v1
+kind: Service
+metadata:
+  name: penpot-backend
+spec:
+  selector:
+    app: penpot-backend
+  ports:
+    - protocol: TCP
+      port: 80  # 替換為 backend 的真實端口
+      targetPort: 80
+
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:

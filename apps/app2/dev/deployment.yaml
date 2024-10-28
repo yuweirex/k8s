@@ -322,4 +322,4 @@ spec:
       port: 80
       nodePort: 30083
   selector:
-    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/name: penpot-http-ingress

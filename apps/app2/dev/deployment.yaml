@@ -277,6 +277,10 @@ spec:
           - path: /
             pathType: Prefix
             backend:
+              service:
+                name: penpot-frontend
+                port:
+                  number: 9001
 ---
 
 apiVersion: v1

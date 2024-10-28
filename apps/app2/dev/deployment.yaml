@@ -277,10 +277,6 @@ spec:
           - path: /
             pathType: Prefix
             backend:
-              service:
-                name: penpot-frontend
-                port:
-                  number: 9001
 ---
 
 apiVersion: v1
@@ -295,3 +291,4 @@ spec:
       nodePort: 30083
   selector:
     app.kubernetes.io/name: penpot-http-ingress
+12

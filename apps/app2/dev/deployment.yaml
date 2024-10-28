@@ -268,8 +268,9 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: penpot-http-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+  labels:
+    app.kubernetes.io/name: penpot-http-ingress
+    app.kubernetes.io/instance: penpot
 spec:
   rules:
     - http:

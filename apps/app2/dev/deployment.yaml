@@ -269,7 +269,7 @@ kind: Ingress
 metadata:
   name: penpot-http-ingress
   annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: 100m
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
     - http:
@@ -281,34 +281,6 @@ spec:
                 name: penpot-frontend
                 port:
                   number: 9001
-          - path: /api
-            pathType: Prefix
-            backend:
-              service:
-                name: penpot-backend
-                port:
-                  number: 9002
-          - path: /assets
-            pathType: Prefix
-            backend:
-              service:
-                name: penpot-backend
-                port:
-                  number: 9002
-          - path: /webhooks
-            pathType: Prefix
-            backend:
-              service:
-                name: penpot-backend
-                port:
-                  number: 9002
-          - path: /ws/notifications
-            pathType: Prefix
-            backend:
-              service:
-                name: penpot-backend
-                port:
-                  number: 9002
 ---
 
 apiVersion: v1
